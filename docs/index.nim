@@ -13,9 +13,9 @@ nb.useXoffy(section = "Office files from Nim", cadence = "since November 2026",
             description = "xoffy writes PowerPoint files from Nim, with Word and Excel next: native slides, shapes, pictures and tables.")
 
 nbTitle "xoffy · pronounced ch-offy", "Office files from Nim", """
-**xoffy** writes PowerPoint files from Nim: slides with text, shapes, pictures and native tables,
-that PowerPoint, Keynote, Google Slides and LibreOffice open and let you edit. Word and Excel come
-next. It needs the standard library and [zippy](https://github.com/guzba/zippy), and nothing else.
+**xoffy** writes PowerPoint files from Nim: slides with text, shapes, pictures and native tables
+that you can edit. Each file passes the schemas of the standard, and LibreOffice draws every slide on
+these pages (PowerPoint itself is the next check). Word and Excel come next. It needs the standard library and [zippy](https://github.com/guzba/zippy), and nothing else.
 Its tagline is Pietro's: *talk with pptx, docx and xlsx from Nim (but I don't want to!)*. xoffy
 talks to them, so you don't have to.
 """

@@ -1,0 +1,89 @@
+name: Pages
+
+# Runs the tests, builds every page (home and devlog), drawing each deck with LibreOffice, and, on
+# main, deploys docs/ to GitHub Pages. The HTML is not committed: it is built here, so it always
+# matches the sources. Pages must use "GitHub Actions" as its source (Settings > Pages).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the whole history: a page's version is the commits that changed it
+
+      - name: No committed HTML or decks
+        run: |
+          built=$(git ls-files '*.html' '*.pptx')
+          if [ -n "$built" ]; then
+            for f in $built; do echo "::error file=$f::generated file committed: CI builds it, remove it with git rm --cached $f"; done
+            exit 1
+          fi
+
+      - uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "2.2.4"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # the same setup as a laptop or a coding-agent sandbox: atlas, libpcre3 for nimib's markdown,
+      # and the dependencies pinned in atlas.lock
+      - uses: actions/cache@v4
+        with:
+          path: deps
+          key: deps-${{ hashFiles('atlas.lock') }}
+      - run: sh tools/setup.sh
+
+      - name: Tests
+        run: nim r tests/all.nim
+
+      # the pages show each deck as LibreOffice draws it: soffice makes a PDF, pdftoppm the PNGs
+      - name: LibreOffice and poppler
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-impress poppler-utils
+
+      - name: Compile the pages
+        run: nim c -d:release -d:nimibQuiet --hints:off docs/all.nim
+
+      - name: Build the pages
+        run: docs/all
+
+      - name: Assemble site
+        run: |
+          mkdir _site
+          (cd docs && find . -name '*.html' | tar -c -T - | tar -x -C ../_site)
+          # the files every page shares (site.css, the fonts, review.js), and the decks with their pictures
+          cp -r docs/assets _site/assets
+          cp -r docs/files _site/files
+          find _site -name '*.html' | sort
+          du -sh _site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

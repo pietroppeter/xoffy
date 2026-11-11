@@ -10,7 +10,7 @@
 ## are kept beside a stamp with the hash of its bytes. Without LibreOffice, the page says so and
 ## links the file.
 
-import std/[os, osproc, strutils, strformat, hashes, algorithm, xmlparser, xmltree, sequtils, json]
+import std/[os, osproc, strutils, strformat, hashes, algorithm, sequtils, json]
 import nimib
 import tabelline, tabelline/nimib
 import xoffy, xoffy/[opc, zip, xml]
