@@ -1,0 +1,13 @@
+deps/
+nimcache/
+# every page is generated (docs/all.nim) and built by CI (.github/workflows/pages.yml)
+*.html
+# compiled binaries
+tests/all
+tests/test_*
+!tests/test_*.nim
+docs/all
+tools/render
+# what the pages write: decks, their pictures, the shared stylesheet
+docs/files/
+docs/assets/site.css
