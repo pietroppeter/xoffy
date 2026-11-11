@@ -18,12 +18,6 @@
       "commit": "72f0752d26e5402570f164c4ac8284f84c09891d",
       "version": ""
     },
-    "xoffy": {
-      "dir": "",
-      "url": "https://github.com/pietroppeter/xoffy",
-      "commit": "9cd4d9ca03a9eb7dbfdf9bbb0f004b018af8aa41",
-      "version": ""
-    },
     "fusion": {
       "dir": "$deps/fusion",
       "url": "https://github.com/nim-lang/fusion",

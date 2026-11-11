@@ -24,7 +24,8 @@ the plan is in the devlog post *Where xoffy is going* (`docs/devlog/roadmap.nim`
   (`pdftoppm`) to draw the slides; without them a page says so and links the file.
 - nimib and tabelline are the `docs` feature of `xoffy.nimble`. To change one: `atlas use` or edit
   the feature, `atlas install --feature=docs`, then `atlas pin --feature=docs` and commit
-  `atlas.lock` and `nim.cfg`.
+  `atlas.lock` and `nim.cfg`. Remove the `xoffy` entry that `atlas pin` adds to `atlas.lock`
+  (`atlas rep` would check the repository itself out at that commit, as CI found).
 
 ## Pages
 
