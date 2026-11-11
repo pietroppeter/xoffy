@@ -43,14 +43,14 @@ suite "text":
   test "snake_case words stay words":
     check inline("a_b_c").len == 1
   test "lines of Markdown become paragraphs, with bullets and numbers":
-    let f = md("Title\n- one\n  - nested\n1. first")
+    let f = markdown("Title\n- one\n  - nested\n1. first")
     check f.paragraphs.len == 4
     check f.paragraphs[1].bullet.kind == bkChar
     check f.paragraphs[2].level == 1
     check f.paragraphs[3].bullet.kind == bkNumber
     check f.plainText == "Title\none\nnested\nfirst"
   test "a paragraph's XML is well formed":
-    check wellFormed(paragraphsXml(md("**a** & <b>\n- c")))
+    check wellFormed(paragraphsXml(markdown("**a** & <b>\n- c")))
 
 suite "grids (tables)":
   test "a grid of text":
@@ -67,7 +67,7 @@ suite "grids (tables)":
     check wellFormed(x)
   test "a grid with no style says what it does not draw":
     var g = newGrid(1, 1)
-    g[0, 0].borders[sdBottom] = line(rgb"000000")
+    g[0, 0].borders[edBottom] = line(rgb"000000")
     let x = tableXml(g)
     check "<a:lnL w=\"0\"><a:noFill/></a:lnL>" in x
     check "<a:lnB w=\"12700\" cmpd=\"sng\">" in x

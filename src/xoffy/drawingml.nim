@@ -135,15 +135,15 @@ type
     text*: string
     font*: Font
     link*: string          ## a URL: the run is a hyperlink
-  Align* = enum
-    alDefault = "", alLeft = "l", alCenter = "ctr", alRight = "r", alJustify = "just"
+  TextAlign* = enum
+    taDefault = "", taLeft = "l", taCenter = "ctr", taRight = "r", taJustify = "just"
   BulletKind* = enum bkInherit, bkNone, bkChar, bkNumber
   Bullet* = object
     kind*: BulletKind
     char*: string          ## for bkChar: `"•"`
   Paragraph* = object
     runs*: seq[Run]
-    align*: Align
+    align*: TextAlign
     level*: int            ## the outline level, 0..8
     bullet*: Bullet
     indent*: Emu           ## the left margin of a bulleted paragraph (the bullet hangs in it)
@@ -176,13 +176,13 @@ func numbered*(): Bullet = Bullet(kind: bkNumber)
 const noBullet* = Bullet(kind: bkNone)
 
 func para*(runs: varargs[Run]): Paragraph = Paragraph(runs: @runs)
-func para*(text: string, font = Font(), align = alDefault): Paragraph =
+func para*(text: string, font = Font(), align = taDefault): Paragraph =
   Paragraph(runs: @[run(text, font)], align: align, endFont: font)
 
 func frame*(paragraphs: varargs[Paragraph]): TextFrame =
   TextFrame(paragraphs: @paragraphs, insets: [auto, auto, auto, auto], wrap: true)
 
-func frame*(text: string, font = Font(), align = alDefault): TextFrame =
+func frame*(text: string, font = Font(), align = taDefault): TextFrame =
   ## A frame from plain text: one paragraph per line.
   result = frame()
   for line in text.split('\n'): result.paragraphs.add para(line, font, align)
@@ -235,7 +235,7 @@ func inline*(md: string, font = Font()): seq[Run] =
     inc i
   flush(result, cur, f)
 
-func md*(text: string, font = Font(), align = alDefault): TextFrame =
+func markdown*(text: string, font = Font(), align = taDefault): TextFrame =
   ## A frame from a little Markdown: one paragraph per line, `- ` starts a bulleted one,
   ## `1. ` a numbered one, and each line's inline Markdown becomes runs (see `inline`).
   result = frame()
@@ -379,36 +379,36 @@ func geometryXml*(g: Geometry, adjust: openArray[(string, int)] = []): string =
 # ---------------------------------------------------------------------------------- tables
 
 type
-  Side* = enum sdLeft, sdRight, sdTop, sdBottom
-  Cell* = object
+  Edge* = enum edLeft, edRight, edTop, edBottom
+  GridCell* = object
     text*: TextFrame
     fill*: Color
-    borders*: array[Side, Line]
-    margins*: array[Side, Emu]   ## `auto` (-1) is Office's default (0.1 inch left and right, 0.05 inch top and bottom)
+    borders*: array[Edge, Line]
+    margins*: array[Edge, Emu]   ## `auto` (-1) is Office's default (0.1 inch left and right, 0.05 inch top and bottom)
     anchor*: Anchor
     span*, rowSpan*: int         ## how many columns and rows the cell covers (1 or 0: one)
     hMerge*, vMerge*: bool       ## covered by the cell to the left / above
-  Row* = object
+  GridRow* = object
     height*: Emu
-    cells*: seq[Cell]
+    cells*: seq[GridCell]
   Grid* = object
     ## A DrawingML table: the same in a slide (`a:tbl` in a graphic frame) and, later, in a chart.
     cols*: seq[Emu]              ## the column widths
-    rows*: seq[Row]
+    rows*: seq[GridRow]
     styleId*: string             ## a table style's GUID; empty: no style, only what the cells say
     firstRow*, bandRow*: bool    ## the style's options
 
-func cell*(text: TextFrame, fill = inherit): Cell =
-  Cell(text: text, fill: fill, margins: [auto, auto, auto, auto])
+func cell*(text: TextFrame, fill = inherit): GridCell =
+  GridCell(text: text, fill: fill, margins: [auto, auto, auto, auto])
 
-func cell*(text: string, font = Font(), align = alDefault, fill = inherit): Cell =
+func cell*(text: string, font = Font(), align = taDefault, fill = inherit): GridCell =
   cell(frame(text, font, align), fill)
 
 func newGrid*(rows, cols: int, colWidth = 1.inch, rowHeight = 0.4.inch): Grid =
   ## A table of empty cells, every column `colWidth` wide.
   for c in 0 ..< cols: result.cols.add colWidth
   for r in 0 ..< rows:
-    var row = Row(height: rowHeight)
+    var row = GridRow(height: rowHeight)
     for c in 0 ..< cols: row.cells.add cell("")
     result.rows.add row
 
@@ -424,8 +424,8 @@ func width*(t: Grid): Emu = sum(t.cols)
 func height*(t: Grid): Emu =
   for r in t.rows: result += r.height
 
-proc `[]`*(t: var Grid, r, c: int): var Cell = t.rows[r].cells[c]
-func `[]`*(t: Grid, r, c: int): Cell = t.rows[r].cells[c]
+proc `[]`*(t: var Grid, r, c: int): var GridCell = t.rows[r].cells[c]
+func `[]`*(t: Grid, r, c: int): GridCell = t.rows[r].cells[c]
 
 proc merge*(t: var Grid, r1, c1, r2, c2: int) =
   ## Merges the cells from row `r1`, column `c1` to row `r2`, column `c2` (both included) into the
@@ -437,26 +437,26 @@ proc merge*(t: var Grid, r1, c1, r2, c2: int) =
   t.rows[r1].cells[c1].span = c2 - c1 + 1
   t.rows[r1].cells[c1].rowSpan = r2 - r1 + 1
 
-proc setBorders*(t: var Grid, l: Line, sides = {sdLeft, sdRight, sdTop, sdBottom}) =
+proc setBorders*(t: var Grid, l: Line, sides = {edLeft, edRight, edTop, edBottom}) =
   ## The same line on the given sides of every cell.
   for row in t.rows.mitems:
     for c in row.cells.mitems:
       for s in sides: c.borders[s] = l
 
-proc cellXml*(c: Cell, links: LinkSink = nil, plain = false): string =
+proc cellXml*(c: GridCell, links: LinkSink = nil, plain = false): string =
   ## A cell. With `plain` (a grid with no style), a side with no line says so, because
   ## applications disagree on what a cell with nothing to say draws.
   let attrs = {"gridSpan": (if c.span > 1: $c.span else: ""), "rowSpan": (if c.rowSpan > 1: $c.rowSpan else: ""),
                "hMerge": (if c.hMerge: "1" else: ""), "vMerge": (if c.vMerge: "1" else: "")}
   let text = if c.hMerge or c.vMerge: frame() else: c.text
   var pr = ""
-  for s, name in [sdLeft: "a:lnL", sdRight: "a:lnR", sdTop: "a:lnT", sdBottom: "a:lnB"]:
+  for s, name in [edLeft: "a:lnL", edRight: "a:lnR", edTop: "a:lnT", edBottom: "a:lnB"]:
     pr.add lineXml((if plain and not c.borders[s].isSet: noLine else: c.borders[s]), name)
   pr.add fillXml(c.fill)
   func m(e: Emu): string = (if int64(e) >= 0: $e else: "")
   tag("a:tc", textBodyXml(text, "a:txBody", links) &
-      tag("a:tcPr", pr, {"marL": m(c.margins[sdLeft]), "marR": m(c.margins[sdRight]),
-                         "marT": m(c.margins[sdTop]), "marB": m(c.margins[sdBottom]),
+      tag("a:tcPr", pr, {"marL": m(c.margins[edLeft]), "marR": m(c.margins[edRight]),
+                         "marT": m(c.margins[edTop]), "marB": m(c.margins[edBottom]),
                          "anchor": $c.anchor}), attrs)
 
 proc tableXml*(t: Grid, links: LinkSink = nil): string =

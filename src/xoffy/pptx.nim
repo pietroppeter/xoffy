@@ -69,7 +69,7 @@ func textBox*(text: TextFrame, b: Box): Shape =
   ## A text box: text in a rectangle with no fill and no line.
   Shape(kind: skShape, box: b, geometry: gRect, text: text, isTextBox: true, name: "Text")
 
-func textBox*(text: string, b: Box, font = Font(), align = alDefault): Shape =
+func textBox*(text: string, b: Box, font = Font(), align = taDefault): Shape =
   ## A text box of plain text, one paragraph per line.
   textBox(frame(text, font, align), b)
 
@@ -79,7 +79,7 @@ func shape*(geometry: Geometry, b: Box, fill = inherit, line = Line(), text = fr
         fill: (if fill.isSet: fill else: scheme(accent1)),
         line: (if line.isSet: line else: noLine), text: text, name: ($geometry).capitalizeAscii)
 
-func shape*(geometry: Geometry, b: Box, fill: Color, text: string, font = Font(), align = alCenter): Shape =
+func shape*(geometry: Geometry, b: Box, fill: Color, text: string, font = Font(), align = taCenter): Shape =
   var t = frame(text, font, align)
   t.anchor = anMiddle
   shape(geometry, b, fill, noLine, t)

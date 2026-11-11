@@ -8,7 +8,7 @@ proc helloDeck(): Presentation =
   s.add connector(4.inch, 4.inch, 3.inch, 3.inch, line(rgb"000000", tail = ahTriangle))
   s.add picture(solidPng(40, 20, (0, 137, 167)), 5.inch, 3.inch, w = 2.inch)
   s.add tableFrame(newGrid(@[@["a", "b"]]), 8.inch, 3.inch)
-  var t = textBox(md"[nim](https://nim-lang.org)", box(1.inch, 6.inch, 3.inch, 1.inch))
+  var t = textBox(markdown"[nim](https://nim-lang.org)", box(1.inch, 6.inch, 3.inch, 1.inch))
   s.add t
   result.add s
   result.add slide(background = rgb"FCFAF2")
