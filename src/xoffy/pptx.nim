@@ -69,6 +69,10 @@ func textBox*(text: TextFrame, b: Box): Shape =
   ## A text box: text in a rectangle with no fill and no line.
   Shape(kind: skShape, box: b, geometry: gRect, text: text, isTextBox: true, name: "Text")
 
+func textBox*(text: TextFrame, b: Box, font: Font): Shape =
+  ## A text box, its text in `font` wherever it says nothing of its own.
+  textBox(text.withFont(font), b)
+
 func textBox*(text: string, b: Box, font = Font(), align = taDefault): Shape =
   ## A text box of plain text, one paragraph per line.
   textBox(frame(text, font, align), b)

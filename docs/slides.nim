@@ -13,7 +13,7 @@
 import std/[os, osproc, strutils, strformat, hashes, algorithm, xmlparser, xmltree, sequtils, json]
 import nimib
 import tabelline, tabelline/nimib
-import xoffy, xoffy/[opc, zip]
+import xoffy, xoffy/[opc, zip, xml]
 import blocks
 
 const filesDir* = currentSourcePath().parentDir / "files"
@@ -56,7 +56,7 @@ newNbBlock(NbSlides):
   toHtml:
     var imgs = ""
     for k, src in blk.pngHrefs:
-      imgs.add &"""<img src="{src}" alt="Slide {k + 1} of {blk.deckName}.pptx, as LibreOffice draws it" loading="lazy">"""
+      imgs.add &"""<img src="{src}" alt="Slide {k + 1} of {blk.deckName}.pptx, as LibreOffice draws it">"""
     let drawn = if blk.pngHrefs.len > 0: "drawn by LibreOffice" else: "LibreOffice was not there to draw it"
     let cap = (if blk.caption.len > 0: markdownToHtml(blk.caption).strip.replace("<p>", "").replace("</p>", "") & " · " else: "")
     &"""<figure class="deck{(if blk.small: " small" else: "")}"><div class="slides">{imgs}</div>""" &
@@ -113,7 +113,8 @@ newNbBlock(NbXml):
   open: bool
   toHtml:
     let lines = blk.xml.countLines
-    &"""<details class="foldcode"{(if blk.open: " open" else: "")}><summary>{esc(blk.label)}<span><code>{esc(blk.part)}</code> · {lines} lines</span></summary>""" &
+    let label = if blk.label.len > 0 and blk.label != blk.part: esc(blk.label) else: "<code>" & esc(blk.part) & "</code>"
+    &"""<details class="foldcode"{(if blk.open: " open" else: "")}><summary>{label}<span>{lines} lines</span></summary>""" &
       &"""<pre><code class="nohighlight xml hljs">{highlightXml(blk.xml)}</code></pre></details>"""
 
 proc addXml*(nb: var Nb, xml, part, label: string, open = false) =
@@ -121,7 +122,7 @@ proc addXml*(nb: var Nb, xml, part, label: string, open = false) =
 
 template nbXml*(p: Presentation, part: string, label = "the XML", open = false) =
   ## One part of the deck `p`, indented and highlighted, folded under `label`.
-  nb.addXml(readPackage(p.toPptx)[part], part, label, open)
+  nb.addXml(readZip(p.toPptx)[part], part, label, open)
 
 template nbXmlText*(xml: string, label = "the XML", part = "", open = false) =
   ## Some XML, indented and highlighted, folded under `label`.

@@ -217,7 +217,7 @@ pre.nb-output::before { content: "output"; display: block; margin-bottom: .1rem;
 .hljs-built_in { color: var(--primary-text); } .hljs-meta { color: var(--muted); }
 
 /* tables: no tape, no squares; the rules come from optCssTheme(), from the tokens */
-.tabella { position: relative; margin: 1.6rem 0 1.8rem; padding: 16px 0 10px; }
+.tabella { position: relative; margin: 1.6rem 0 1.8rem; padding: 16px 0 10px; overflow-x: auto; }  /* a wide table scrolls in its box */
 .tabella .tb_title { font-family: var(--hand); font-size: 125%; letter-spacing: -.01em; }
 .tabella td code { overflow-wrap: anywhere; }  /* long names in a cell wrap on a phone */
 main table:not(.tb_table) { border-collapse: collapse; margin: 1rem 0; background: var(--surface); }
@@ -425,6 +425,7 @@ details.source pre { overflow-x: auto; }   /* the whole source, top to bottom: i
 .deck.small .slides { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 .deck figcaption { margin-top: .45rem; font-size: .82rem; line-height: 1.4; color: var(--muted); }
 .deck figcaption a { font-weight: 700; }
+details.foldcode > summary code { overflow-wrap: anywhere; min-width: 0; }
 """
 
 # ------------------------------------------------------------------------------------ the quaderno

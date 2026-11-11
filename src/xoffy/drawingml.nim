@@ -187,6 +187,25 @@ func frame*(text: string, font = Font(), align = taDefault): TextFrame =
   result = frame()
   for line in text.split('\n'): result.paragraphs.add para(line, font, align)
 
+func under*(f, base: Font): Font =
+  ## `f`, with what it leaves unset taken from `base`: size, colour, typeface, and bold or italic
+  ## when `base` has them.
+  result = f
+  if result.size == 0: result.size = base.size
+  if not result.color.isSet: result.color = base.color
+  if result.typeface.len == 0: result.typeface = base.typeface
+  result.bold = f.bold or base.bold
+  result.italic = f.italic or base.italic
+  result.underline = f.underline or base.underline
+  result.caps = f.caps or base.caps
+
+func withFont*(t: TextFrame, font: Font): TextFrame =
+  ## The frame, every run (and every empty paragraph) in `font` where it says nothing of its own.
+  result = t
+  for p in result.paragraphs.mitems:
+    for r in p.runs.mitems: r.font = r.font.under(font)
+    p.endFont = p.endFont.under(font)
+
 # ----------------------------------------------------------- a little Markdown, as runs
 
 func inline*(md: string, font = Font()): seq[Run] =
@@ -299,11 +318,16 @@ proc paragraphXml*(p: Paragraph, links: LinkSink = nil): string =
   of bkNumber:
     props.add tag("a:buFont", "", {"typeface": "+mj-lt"}) & tag("a:buAutoNum", "", {"type": "arabicPeriod"})
   if p.bullet.kind in {bkChar, bkNumber}:
-    let step = if int64(p.indent) > 0: p.indent else: 18.pt
+    # the hanging indent the bullet sits in: given, or about one em of the paragraph's text
+    var size = p.endFont.size
+    for r in p.runs:
+      if r.font.size > 0: (size = r.font.size; break)
+    let step = if int64(p.indent) > 0: p.indent else: max(18.pt, (1.1 * (if size > 0: size else: 18.0)).pt)
     marL = $(step * (p.level + 1))
     indent = $(-step)
-  result = "<a:p>" & tag("a:pPr", props, {"marL": marL, "lvl": (if p.level > 0: $p.level else: ""),
-                                          "indent": indent, "algn": $p.align})
+  let pPr = tag("a:pPr", props, {"marL": marL, "lvl": (if p.level > 0: $p.level else: ""),
+                                 "indent": indent, "algn": $p.align})
+  result = "<a:p>" & (if pPr == "<a:pPr/>": "" else: pPr)
   for r in p.runs: result.add runXml(r, links)
   result.add fontXml(p.endFont, "a:endParaRPr")
   result.add "</a:p>"
@@ -374,7 +398,7 @@ func geometryXml*(g: Geometry, adjust: openArray[(string, int)] = []): string =
   ## `<a:prstGeom prst="ellipse">`, with the shape's adjust values (`adj`, in 1/100000).
   var av = ""
   for (name, v) in adjust: av.add tag("a:gd", "", {"name": name, "fmla": "val " & $v})
-  tag("a:prstGeom", "<a:avLst>" & av & "</a:avLst>", {"prst": $g})
+  tag("a:prstGeom", tag("a:avLst", av), {"prst": $g})
 
 # ---------------------------------------------------------------------------------- tables
 

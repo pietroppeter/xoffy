@@ -15,7 +15,13 @@
     "tabelline": {
       "dir": "$deps/tabelline",
       "url": "https://github.com/pietroppeter/tabelline",
-      "commit": "27071b5fa60b8b5a389a4914203f9ba3f2f6a31e",
+      "commit": "72f0752d26e5402570f164c4ac8284f84c09891d",
+      "version": ""
+    },
+    "xoffy": {
+      "dir": "",
+      "url": "https://github.com/pietroppeter/xoffy",
+      "commit": "9cd4d9ca03a9eb7dbfdf9bbb0f004b018af8aa41",
       "version": ""
     },
     "fusion": {

@@ -11,3 +11,4 @@ tools/render
 # what the pages write: decks, their pictures, the shared stylesheet
 docs/files/
 docs/assets/site.css
+/*.pptx
