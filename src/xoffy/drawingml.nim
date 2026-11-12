@@ -467,6 +467,29 @@ proc setBorders*(t: var Grid, l: Line, sides = {edLeft, edRight, edTop, edBottom
     for c in row.cells.mitems:
       for s in sides: c.borders[s] = l
 
+func stronger(a, b: Line): Line =
+  ## Of two lines for the same edge: one that is set over one that inherits, a line over no line,
+  ## then the wider (on a tie, `a`). CSS's border-collapse, roughly.
+  func rank(l: Line): int =
+    if not l.isSet: 0 elif l.color.kind == ckNone: 1 else: 2
+  if rank(b) > rank(a) or (rank(b) == 2 and rank(a) == 2 and int64(b.width) > int64(a.width)): b
+  else: a
+
+proc collapseBorders*(t: var Grid) =
+  ## Two cells side by side share one edge, and PowerPoint keeps a single line for it, the top
+  ## or left cell's: a line set only on the other side is lost. This gives both sides the stronger
+  ## line. `tableXml` does it on its own copy of the grid.
+  for i in 0 ..< t.rows.len:
+    for k in 0 ..< t.rows[i].cells.len:
+      if k + 1 < t.rows[i].cells.len:
+        let l = stronger(t.rows[i].cells[k].borders[edRight], t.rows[i].cells[k+1].borders[edLeft])
+        t.rows[i].cells[k].borders[edRight] = l
+        t.rows[i].cells[k+1].borders[edLeft] = l
+      if i + 1 < t.rows.len and k < t.rows[i+1].cells.len:
+        let l = stronger(t.rows[i].cells[k].borders[edBottom], t.rows[i+1].cells[k].borders[edTop])
+        t.rows[i].cells[k].borders[edBottom] = l
+        t.rows[i+1].cells[k].borders[edTop] = l
+
 proc cellXml*(c: GridCell, links: LinkSink = nil, plain = false): string =
   ## A cell. With `plain` (a grid with no style), a side with no line says so, because
   ## applications disagree on what a cell with nothing to say draws.
@@ -485,6 +508,8 @@ proc cellXml*(c: GridCell, links: LinkSink = nil, plain = false): string =
 
 proc tableXml*(t: Grid, links: LinkSink = nil): string =
   ## `<a:tbl>`: its properties, the grid of column widths, and the rows.
+  var t = t
+  t.collapseBorders
   var props = ""
   if t.styleId.len > 0: props = tag("a:tableStyleId", t.styleId)
   result = "<a:tbl>" & tag("a:tblPr", props, {"firstRow": (if t.firstRow: "1" else: ""),
