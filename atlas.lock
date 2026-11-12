@@ -1,0 +1,106 @@
+{
+  "items": {
+    "zippy": {
+      "dir": "$deps/zippy",
+      "url": "https://github.com/guzba/zippy",
+      "commit": "cd562ba43ae8904a4d1ba55611b8a521ef4a179e",
+      "version": ""
+    },
+    "nimib": {
+      "dir": "$deps/nimib",
+      "url": "https://github.com/pietroppeter/nimib",
+      "commit": "7118b3a8fa112757b7d76ffcb5251a6478cbfcfd",
+      "version": ""
+    },
+    "tabelline": {
+      "dir": "$deps/tabelline",
+      "url": "https://github.com/pietroppeter/tabelline",
+      "commit": "72f0752d26e5402570f164c4ac8284f84c09891d",
+      "version": ""
+    },
+    "fusion": {
+      "dir": "$deps/fusion",
+      "url": "https://github.com/nim-lang/fusion",
+      "commit": "0b0a0273b8df860cd54e3fcca7bb4c617244ac77",
+      "version": ""
+    },
+    "nim-markdown": {
+      "dir": "$deps/markdown",
+      "url": "https://github.com/soasme/nim-markdown",
+      "commit": "5a7a7bafd1da23b25332316a7b888e6586f4177a",
+      "version": ""
+    },
+    "parsetoml": {
+      "dir": "$deps/parsetoml",
+      "url": "https://github.com/NimParsers/parsetoml",
+      "commit": "d297f5a81be2472905d367aa675dcbbca6e7a5d2",
+      "version": ""
+    },
+    "jsony": {
+      "dir": "$deps/jsony",
+      "url": "https://github.com/treeform/jsony",
+      "commit": "bb647e1ca21af25ffdc423bcb96feeeeae963ca2",
+      "version": ""
+    },
+    "nimibook": {
+      "dir": "$deps/nimibook",
+      "url": "https://github.com/pietroppeter/nimibook",
+      "commit": "b02b02f3ddce3c5f765b1ef274115a689c6ecf9f",
+      "version": ""
+    },
+    "nanuq": {
+      "dir": "$deps/nanuq",
+      "url": "https://github.com/pietroppeter/nanuq",
+      "commit": "44eaf861d02f208e3c3ca181f828b1b8a9d41e9a",
+      "version": ""
+    }
+  },
+  "nimcfg": [
+    "############# begin Atlas config section ##########",
+    "--noNimblePath",
+    "--path:\"deps/fusion/src\"",
+    "--path:\"deps/jsony/src\"",
+    "--path:\"deps/markdown/src\"",
+    "--path:\"deps/nanuq/src\"",
+    "--path:\"deps/nimib/src\"",
+    "--path:\"deps/nimibook/src\"",
+    "--path:\"deps/parsetoml/src\"",
+    "--path:\"deps/tabelline/src\"",
+    "--path:\"deps/zippy/src\"",
+    "--define:\"features.xoffy.docs\"",
+    "--define:\"feature.xoffy.docs\"",
+    "--define:\"features.tabelline.docs\"",
+    "--define:\"feature.tabelline.docs\"",
+    "############# end Atlas config section   ##########",
+    ""
+  ],
+  "nimbleFile": {
+    "filename": "xoffy.nimble",
+    "content": [
+      "# Package",
+      "",
+      "version       = \"0.1.0\"",
+      "author        = \"Pietro Peterlongo\"",
+      "description   = \"Office files (PowerPoint first, then Word and Excel) from Nim\"",
+      "license       = \"MIT\"",
+      "srcDir        = \"src\"",
+      "",
+      "# Dependencies",
+      "",
+      "requires \"nim >= 2.2.0\"  # nimble 0.18+ (Nim 2.2) reads the `feature` block below",
+      "requires \"zippy >= 0.10.16\"  # deflate and inflate, the only thing the library does not do itself",
+      "",
+      "# nimib for the pages, and tabelline for their tables: the `docs` feature, pinned in atlas.lock",
+      "# (`sh tools/setup.sh` replays it).",
+      "feature \"docs\":",
+      "  requires \"nimib#head\"  # nimib after 0.4.3, without the deprecated md (as tabelline)",
+      "  requires \"https://github.com/pietroppeter/tabelline#head\"  # 0.2 is on main, not yet tagged",
+      ""
+    ]
+  },
+  "hostOS": "linux",
+  "hostCPU": "amd64",
+  "nimVersion": "2.2.4 f7145dd26efeeeb6eeae6fff649db244d81b212d",
+  "gccVersion": "13.3.0",
+  "clangVersion": ""
+}
