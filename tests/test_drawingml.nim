@@ -71,3 +71,16 @@ suite "grids (tables)":
     let x = tableXml(g)
     check "<a:lnL w=\"0\"><a:noFill/></a:lnL>" in x
     check "<a:lnB w=\"12700\" cmpd=\"sng\">" in x
+  test "two cells give their shared edge the same line, the stronger":
+    var g = newGrid(2, 2)
+    g[0, 0].borders[edBottom] = line(rgb"000000", 2.pt)
+    g[1, 0].borders[edTop] = noLine
+    g[1, 1].borders[edTop] = line(rgb"DFDFDF")
+    g[0, 1].borders[edRight] = line(rgb"000000")
+    let x = tableXml(g)
+    check x.count("<a:lnB w=\"25400\"") == 1 and x.count("<a:lnT w=\"25400\"") == 1
+    check x.count("<a:lnB w=\"12700\"") == 1 and x.count("<a:lnT w=\"12700\"") == 1
+    check g[1, 0].borders[edTop] == noLine  # the grid itself is left as it was
+    g.collapseBorders
+    check g[1, 0].borders[edTop] == g[0, 0].borders[edBottom]
+    check g[0, 1].borders[edBottom] == g[1, 1].borders[edTop]
